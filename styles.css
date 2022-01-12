@@ -56,9 +56,18 @@ button{
 
 #remote-video{
     top: 0;
-    height: 100%;
-    width: 100%;
+    height: 50%;
+    width: 50%;
     left: 0;
+    background-color: lightgray;
+    position: absolute;
+}
+
+#remote-video2{
+    bottom: 0;
+    height: 50%;
+    width: 50%;
+    left: right;
     background-color: lightgray;
     position: absolute;
 }

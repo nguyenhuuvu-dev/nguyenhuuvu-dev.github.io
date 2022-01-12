@@ -1,12 +1,13 @@
 const PRE = "DELTA"
 const SUF = "MEET"
 var room_id;
-var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia
 var local_stream;
 var screenStream;
 var peer = null;
 var currentPeer = null
 var screenSharing = false
+var test = ''
 function createRoom() {
     console.log("Creating Room")
     let room = document.getElementById("room-input").value;
@@ -19,6 +20,7 @@ function createRoom() {
     peer.on('open', (id) => {
         console.log("Peer Connected with ID: ", id)
         hideModal()
+        console.log(getUserMedia)
         getUserMedia({ video: true, audio: true }, (stream) => {
             local_stream = stream;
             setLocalStream(local_stream)
@@ -28,9 +30,17 @@ function createRoom() {
         notify("Waiting for peer to join.")
     })
     peer.on('call', (call) => {
+        console.log('call with', call.peer)
+        
+        if (test == '')
+            test = call.peer
+
         call.answer(local_stream);
         call.on('stream', (stream) => {
-            setRemoteStream(stream)
+            if (test == call.peer)
+                setRemoteStream(stream)
+            else
+                setRemoteStream2(stream)
         })
         currentPeer = call;
     })
@@ -43,9 +53,15 @@ function setLocalStream(stream) {
     video.muted = true;
     video.play();
 }
-function setRemoteStream(stream) {
 
+function setRemoteStream(stream) {
     let video = document.getElementById("remote-video");
+    video.srcObject = stream;
+    video.play();
+}
+
+function setRemoteStream2(stream) {
+    let video = document.getElementById("remote-video2");
     video.srcObject = stream;
     video.play();
 }
@@ -81,6 +97,7 @@ function joinRoom() {
             notify("Joining peer")
             let call = peer.call(room_id, stream)
             call.on('stream', (stream) => {
+                console.log('stream', stream)
                 setRemoteStream(stream);
             })
             currentPeer = call;
@@ -99,6 +116,7 @@ function startScreenShare() {
         screenStream = stream;
         let videoTrack = screenStream.getVideoTracks()[0];
         videoTrack.onended = () => {
+            console.log('end')
             stopScreenSharing()
         }
         if (peer) {
